@@ -9,6 +9,7 @@ services:
     build: ./
     networks:
       - yamp
+    hostname: yamp
     env_file:
       - .env
     ports:
@@ -16,48 +17,36 @@ services:
     volumes:
       - ./plugins:/plugins:ro
 
-#  test_server:
-#    build: test/server
-#    profiles:
-#      - testing
-#    depends_on:
-#      - yamp
-#    networks:
-#      - yamp
-#    env_file:
-#      - .env
-#    cap_add:
-#      - NET_ADMIN
-#
-#  test_client_inside:
-#    build: test/client
-#    profiles:
-#      - testing
-#    depends_on:
-#      - yamp
-#      - test_server
-#    networks:
-#      - yamp
-#    env_file:
-#      - .env
-#    cap_add:
-#      - NET_ADMIN
-#    environment:
-#      YAMP_TEST_CLIENT: inside
-#
-#  test_client_outside:
-#    build: test/client
-#    profiles:
-#      - testing
-#    depends_on:
-#      - yamp
-#      - test_server
-#    networks:
-#      - yamp
-#    env_file:
-#      - .env
-#    environment:
-#      YAMP_TEST_CLIENT: outside
+  test_server:
+    build: test/server
+    profiles:
+      - testing
+    depends_on:
+      - yamp
+    networks:
+      - yamp
+    hostname: testserver
+    env_file:
+      - .env
+      - .env-test
+    cap_add:
+      - NET_ADMIN
+
+  test_client:
+    build: test/client
+    profiles:
+      - testing
+    depends_on:
+      - yamp
+      - test_server
+    networks:
+      - yamp
+    hostname: testclient
+    env_file:
+      - .env
+      - .env-test
+    cap_add:
+      - NET_ADMIN
 
 networks:
   yamp:
