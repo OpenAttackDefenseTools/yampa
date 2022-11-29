@@ -17,10 +17,6 @@ class BaseUrlSession(Session):
 
 @pytest.fixture(scope="session", params=["filtered", "unfiltered"])
 def is_filtered(request):
-    # TODO: Implement proxy and remove this skip
-    if request.param == "filtered":
-        pytest.skip("Proxy is not implemented yet")
-
     return request.param == "filtered"
 
 

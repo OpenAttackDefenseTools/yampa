@@ -33,6 +33,8 @@ NETWORK_OWN_PUBLIC="$NETWORK_OWN_PUBLIC"
 # peer private key is only used for testing
 NETWORK_PEER_PRIVATE="$NETWORK_PEER_PRIVATE"
 NETWORK_PEER_PUBLIC="$NETWORK_PEER_PUBLIC"
+# Comment this out to start yamp without a fixed endpoint
+NETWORK_PEER_ENDPOINT="testclient:51820"
 
 # For CTFs: fill in the connection to the vulnbox here
 PROXY_OWN_PRIVATE="$PROXY_OWN_PRIVATE"
@@ -40,6 +42,8 @@ PROXY_OWN_PUBLIC="$PROXY_OWN_PUBLIC"
 # peer private key is only used for testing
 PROXY_PEER_PRIVATE="$PROXY_PEER_PRIVATE"
 PROXY_PEER_PUBLIC="$PROXY_PEER_PUBLIC"
+# Comment this out to start yamp without a fixed endpoint
+PROXY_PEER_ENDPOINT="testserver:51820"
 
 EOF
 

@@ -26,4 +26,4 @@ VOLUME /yamp/plugins
 COPY --from=builder /venv /venv
 COPY yamp /yamp
 
-CMD [ "python", "-m", "yamp" ]
+CMD [ "bash", "-c", "sleep 0.5 && exec python -m yamp" ]
