@@ -6,7 +6,7 @@ import mitmproxy_wireguard as wireguard
 from .config import load_config
 
 
-async def handle_connection(forward_server, connection: wireguard.TcpStream):
+async def handle_connection(forward_server: wireguard.Server, connection: wireguard.TcpStream):
     # see https://github.com/mitmproxy/mitmproxy/issues/5707 for why this is named like this
     src_addr = connection.get_extra_info('peername')
     dst_addr = connection.get_extra_info('original_dst')
@@ -25,8 +25,8 @@ async def handle_connection(forward_server, connection: wireguard.TcpStream):
                 from_conn.close()
                 return
 
-            side = "network -> proxy" if from_conn == connection else "proxy -> network"
-            print(f"{side} {data}")
+            side = "net -> pro" if from_conn == connection else "pro -> net"
+            print(f"[TCP] {side} {data}")
 
             try:
                 to_conn.write(data)
@@ -38,23 +38,39 @@ async def handle_connection(forward_server, connection: wireguard.TcpStream):
                          read_forward_task(forward_connection, connection))
 
 
-def handle_datagram(forward_server, data, src_addr, dst_addr):
+def handle_datagram(forward_server: wireguard.Server, data, src_addr, dst_addr):
+    side = "net -> pro" if forward_server == proxy_server else "pro -> net"
+    print(f"[UDP] {side} {data}")
     forward_server.send_datagram(data, dst_addr, src_addr)
 
 
+def handle_other(forward_server: wireguard.Server, data):
+    side = "net -> pro" if forward_server == proxy_server else "pro -> net"
+    print(f"[???] {side} {data}")
+    forward_server.send_other_packet(data)
+
+
+network_server = None
+proxy_server = None
+
+
 async def main():
+    global network_server
+    global proxy_server
     config = load_config()
 
     network_server = await wireguard.start_server("0.0.0.0", 51820,
                                                   config.network.own_private,
                                                   [config.network.peer_public], [config.network.peer_endpoint],
                                                   lambda connection: handle_connection(proxy_server, connection),
-                                                  lambda data, src, dst: handle_datagram(proxy_server, data, src, dst))
+                                                  lambda data, src, dst: handle_datagram(proxy_server, data, src, dst),
+                                                  lambda data: handle_other(proxy_server, data))
     proxy_server = await wireguard.start_server("0.0.0.0", 51821,
                                                 config.proxy.own_private,
                                                 [config.proxy.peer_public], [config.proxy.peer_endpoint],
                                                 lambda connection: handle_connection(network_server, connection),
-                                                lambda data, src, dst: handle_datagram(network_server, data, src, dst))
+                                                lambda data, src, dst: handle_datagram(network_server, data, src, dst),
+                                                lambda data: handle_other(network_server, data))
 
     def stop(*_):
         network_server.close()
