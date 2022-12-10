@@ -1,15 +1,40 @@
 import asyncio
 import signal
+import pluggy
 
 import mitmproxy_wireguard as wireguard
 
 from .config import load_config
+
+projectname = 'yamp'
+
+pm = pluggy.PluginManager(projectname)
+
+hookspec = pluggy.HookspecMarker(projectname)
+hookimp = pluggy.HookimplMarker(projectname)
+
+
+class HookSpecs:
+	@hookspec
+	def log(self, message):
+		'''hook-specification for logging'''
+
+class HookImps:	
+	
+	def __init__(self):
+		self.prefix = "[*] "
+	
+	@hookimp
+	def log(self, message):
+		print(self.prefix + message)
 
 
 async def handle_connection(forward_server: wireguard.Server, connection: wireguard.TcpStream):
     # see https://github.com/mitmproxy/mitmproxy/issues/5707 for why this is named like this
     src_addr = connection.get_extra_info('peername')
     dst_addr = connection.get_extra_info('original_dst')
+    
+    pm.hook.log(message = f'{src_addr} --> {dst_addr}')
 
     forward_connection = await forward_server.new_connection(src_addr, dst_addr)
 
@@ -57,7 +82,11 @@ proxy_server = None
 async def main():
     global network_server
     global proxy_server
+    global pm
     config = load_config()
+    
+    pm.add_hookspecs(HookSpecs)
+    pm.register(HookImps())
 
     network_server = await wireguard.start_server("0.0.0.0", 51820,
                                                   config.network.own_private,
