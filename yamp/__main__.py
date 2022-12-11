@@ -1,30 +1,12 @@
 import asyncio
 import signal
-import pluggy
 
 import mitmproxy_wireguard as wireguard
 
 from .config import load_config
+import yamp.plugin_manager
 
-pm = None
-
-hookspec = pluggy.HookspecMarker('yamp')
-hookimp = pluggy.HookimplMarker('yamp')
-
-
-class HookSpecs:
-    @hookspec
-    def log(self, message):
-        '''hook-specification for logging'''
-
-class HookImps:	
-    
-    def __init__(self):
-        self.prefix = "[*] "
-    
-    @hookimp
-    def log(self, message):
-        print(self.prefix + message)
+pm = yamp.plugin_manager.PM()
 
 
 async def handle_connection(forward_server: wireguard.Server, connection: wireguard.TcpStream):
@@ -32,7 +14,7 @@ async def handle_connection(forward_server: wireguard.Server, connection: wiregu
     src_addr = connection.get_extra_info('peername')
     dst_addr = connection.get_extra_info('original_dst')
     
-    pm.hook.log(message = f'{src_addr} --> {dst_addr}')
+    pm.log(message = f'{src_addr} --> {dst_addr}')
 
     forward_connection = await forward_server.new_connection(src_addr, dst_addr)
 
@@ -76,22 +58,6 @@ def handle_other(forward_server: wireguard.Server, data):
 network_server = None
 proxy_server = None
 
-def setup_plugin_manager():
-    global pm
-    pm = pluggy.PluginManager('yamp')
-    pm.add_hookspecs(HookSpecs)
-
-def load_plugins(module_name: str):
-    global pm
-    
-    try:
-        module = __import__(module_name, fromlist=[''])
-    except ImportError as e:
-        print(f'Error: could not load module {module_name}:\n{e}')
-        return
-    
-    pm.register(module.HookImps())
-
 
 async def main():
     global network_server
@@ -99,9 +65,7 @@ async def main():
     
     config = load_config()
     
-    setup_plugin_manager()
-    
-    load_plugins('yamp.my_awesome_plugins')
+    pm.load_plugins('yamp.my_awesome_plugins')
     
     
     network_server = await wireguard.start_server("0.0.0.0", 51820,
