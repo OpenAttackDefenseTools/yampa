@@ -2,4 +2,4 @@
 
 ./generate-env.sh
 
-docker compose --profile testing up --build --abort-on-container-exit
+docker compose --profile testing --env-file .env-test up --build --abort-on-container-exit
