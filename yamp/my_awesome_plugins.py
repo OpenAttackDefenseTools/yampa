@@ -5,7 +5,7 @@ hookimp = pluggy.HookimplMarker('yamp')
 class HookImps:	
     
     def __init__(self):
-        self.prefix = "[yamp] "
+        self.prefix = "[*] "
     
     @hookimp
     def log(self, message):

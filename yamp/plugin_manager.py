@@ -5,14 +5,13 @@ hookspec = pluggy.HookspecMarker('yamp')
 class HookSpecs:
 	@hookspec
 	def log(self, message):
-		'''hook-specification for logging'''
 
 
 class PM:
 	
 	def __init__(self):
-		self.pm = pluggy.PluginManager('yamp')
-		self.pm.add_hookspecs(HookSpecs)
+		self._pm = pluggy.PluginManager('yamp')
+		self._pm.add_hookspecs(HookSpecs)
 	
 	def load_plugins(self, module_name: str):
 		try:
@@ -21,8 +20,13 @@ class PM:
 			print(f'Error: could not load module {module_name}:\n{e}')
 			return
 		
-		self.pm.register(module.HookImps())
+		self._pm.register(module.HookImps())
+	
+	def unregister_plugins(self):
+		self._pm.unregister()
+	
+	# --------- wrappers for hooks ------------
 	
 	def log(self, message):
-		self.pm.hook.log(message=message)
+		self._pm.hook.log(message=message)
 
