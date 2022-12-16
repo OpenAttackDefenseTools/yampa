@@ -14,8 +14,10 @@ services:
       - .env
     ports:
       - "51820:51820/udp"
+      - "51821:51821/udp"
     volumes:
       - ./plugins:/plugins:ro
+      - ./dependencies:/dependencies:ro
 
   test_server:
     build: test/server

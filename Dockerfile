@@ -18,10 +18,12 @@ RUN pip install --no-cache-dir -r /requirements.txt
 FROM python:3.11-slim
 
 ENV PATH="/venv/bin:$PATH"
+ENV PYTHONPATH="/dependencies:$PYTHONPATH"
 
 WORKDIR /
 
-VOLUME /yamp/plugins
+VOLUME /plugins
+VOLUME /dependencies
 
 COPY --from=builder /venv /venv
 COPY yamp /yamp
