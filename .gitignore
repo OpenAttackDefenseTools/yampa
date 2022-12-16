@@ -280,3 +280,9 @@ cython_debug/
 
 .idea/
 .env-test
+
+dependencies/*
+!dependencies/.keep
+
+plugins/*
+!plugins/.keep

@@ -6,15 +6,15 @@ import mitmproxy_wireguard as wireguard
 from .config import load_config
 import yamp.plugin_manager
 
-pm = yamp.plugin_manager.PM()
+pm = yamp.plugin_manager.PluginManager()
 
 
 async def handle_connection(forward_server: wireguard.Server, connection: wireguard.TcpStream):
     # see https://github.com/mitmproxy/mitmproxy/issues/5707 for why this is named like this
     src_addr = connection.get_extra_info('peername')
     dst_addr = connection.get_extra_info('original_dst')
-    
-    pm.log(message = f'{src_addr} --> {dst_addr}')
+
+    pm.log(message=f'{src_addr} --> {dst_addr}')
 
     forward_connection = await forward_server.new_connection(src_addr, dst_addr)
 
@@ -62,12 +62,11 @@ proxy_server = None
 async def main():
     global network_server
     global proxy_server
-    
+
     config = load_config()
-    
-    pm.load_plugins('yamp.my_awesome_plugins')
-    
-    
+
+    pm.reload()
+
     network_server = await wireguard.start_server("0.0.0.0", 51820,
                                                   config.network.own_private,
                                                   [config.network.peer_public], [config.network.peer_endpoint],
@@ -86,6 +85,13 @@ async def main():
         proxy_server.close()
 
     signal.signal(signal.SIGTERM, stop)
+
+    def reload(*_):
+        print("Reloading plugins...")
+        pm.reload()
+        print("Done")
+
+    signal.signal(signal.SIGUSR1, reload)
 
     print(
         f"Network server running with own public key {config.network.own_public} and peer public key {config.network.peer_public}")
