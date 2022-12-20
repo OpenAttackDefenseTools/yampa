@@ -1,2 +1,1 @@
-git+https://github.com/ItsShadowCone/mitmproxy_wireguard@85b53c0e0bb8ebcbc68b62b02de68d2978352024#egg=mitmproxy_wireguard
-pluggy~=1.0.0
+git+https://github.com/ItsShadowCone/mitmproxy_wireguard@b23c72f85244dadd19940522b514b8e525ac66ff#egg=mitmproxy_wireguard

@@ -13,7 +13,7 @@ class WireguardConfig:
 
 
 @dataclass
-class Config:
+class ProxyConfig:
     network: WireguardConfig
     proxy: WireguardConfig
 
@@ -38,5 +38,5 @@ class Config:
         self.proxy = WireguardConfig(proxy_own_private, proxy_own_public, proxy_peer_public, proxy_peer_endpoint)
 
 
-def load_config() -> Config:
-    return Config(os.environ)
+def load_config() -> ProxyConfig:
+    return ProxyConfig(os.environ)
