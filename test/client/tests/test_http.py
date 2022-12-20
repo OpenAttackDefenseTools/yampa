@@ -21,7 +21,7 @@ def test_exploit(is_filtered, http_session):
     if is_filtered:
         try:
             response = http_session.get("/exploit/AAAAAAAAAAAAAAAAAAAAAAA", timeout=0.5)
-        except ReadTimeout:
+        except RequestException:
             pass
         else:
             raise AssertionError("Expected /exploit to fail")

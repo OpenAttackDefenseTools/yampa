@@ -1,14 +1,14 @@
+import aiohttp
 
-import pluggy
-hookimp = pluggy.HookimplMarker('yamp')
+from yamp import *
 
-import requests
 
-class MyPlugin():
+class MyPlugin(PluginBase):
     def __init__(self):
         self.prefix = "[!] "
 
-    @hookimp
-    def log(self, message):
-        print(self.prefix + message)
-        requests.post("https://aaaaaasdf.requestcatcher.com/test", data=message)
+    async def tcp_log(self, connection: ProxyConnection, metadata: Metadata, data: bytes,
+                      action: None | tuple[FilterAction, bytes | None]) -> None:
+        print(self.prefix, data)
+        async with aiohttp.ClientSession() as session:
+            await session.post("https://aaaaaasdf.requestcatcher.com/test", data=data.decode())

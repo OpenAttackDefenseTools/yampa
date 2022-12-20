@@ -95,6 +95,16 @@ EOF
     exit 0
   fi
 
+  NETWORK_OWN_PRIVATE="$(wg genkey)"
+  NETWORK_OWN_PUBLIC="$(echo $NETWORK_OWN_PRIVATE | wg pubkey)"
+  NETWORK_PEER_PRIVATE="$(wg genkey)"
+  NETWORK_PEER_PUBLIC="$(echo $NETWORK_PEER_PRIVATE | wg pubkey)"
+
+  PROXY_OWN_PRIVATE="$(wg genkey)"
+  PROXY_OWN_PUBLIC="$(echo $PROXY_OWN_PRIVATE | wg pubkey)"
+  PROXY_PEER_PRIVATE="$(wg genkey)"
+  PROXY_PEER_PUBLIC="$(echo $PROXY_PEER_PRIVATE | wg pubkey)"
+
   DIR="$(mktemp -d)"
   openssl req -x509 -newkey rsa:4096 -keyout "$DIR"/key.pem -out "$DIR"/cert.pem -nodes -subj '/CN=localhost' -addext "subjectAltName = DNS:testserver,IP:10.2.3.4" -sha256 -days 3650
   HTTPS_CERTIFICATE="$(cat "$DIR"/cert.pem)"
@@ -102,9 +112,28 @@ EOF
   rm -rf "$DIR"
 
   cat <<EOF >.env-test
+# To make sure logging output works
+PYTHONUNBUFFERED=1
+
+# For CTFs: fill in the gamenet config here
+NETWORK_OWN_PRIVATE="$NETWORK_OWN_PRIVATE"
+NETWORK_OWN_PUBLIC="$NETWORK_OWN_PUBLIC"
+# peer private key is only used for testing
+NETWORK_PEER_PRIVATE="$NETWORK_PEER_PRIVATE"
+NETWORK_PEER_PUBLIC="$NETWORK_PEER_PUBLIC"
+# Use this to start yamp without a fixed endpoint
+NETWORK_PEER_ENDPOINT="testclient:51820"
+
+# For CTFs: fill in the connection to the vulnbox here
+PROXY_OWN_PRIVATE="$PROXY_OWN_PRIVATE"
+PROXY_OWN_PUBLIC="$PROXY_OWN_PUBLIC"
+# peer private key is only used for testing
+PROXY_PEER_PRIVATE="$PROXY_PEER_PRIVATE"
+PROXY_PEER_PUBLIC="$PROXY_PEER_PUBLIC"
+# Use this to start yamp without a fixed endpoint
+PROXY_PEER_ENDPOINT="testserver:51820"
+
 HTTPS_CERTIFICATE="$HTTPS_CERTIFICATE"
 HTTPS_KEY="$HTTPS_KEY"
-NETWORK_PEER_ENDPOINT="testclient:51820"
-PROXY_PEER_ENDPOINT="testserver:51820"
 EOF
 )

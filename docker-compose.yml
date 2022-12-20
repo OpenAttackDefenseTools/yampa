@@ -11,12 +11,12 @@ services:
       - yamp
     hostname: yamp
     env_file:
-      - .env
+      - ${ENV_FILE-.env}
     ports:
       - "51820:51820/udp"
       - "51821:51821/udp"
     volumes:
-      - ./plugins:/plugins:ro
+      - ${PLUGIN_DIR-./plugins}:/plugins:ro
       - ./dependencies:/dependencies:ro
 
   test_server:
@@ -29,7 +29,6 @@ services:
       - yamp
     hostname: testserver
     env_file:
-      - .env
       - .env-test
     cap_add:
       - NET_ADMIN
@@ -45,7 +44,6 @@ services:
       - yamp
     hostname: testclient
     env_file:
-      - .env
       - .env-test
     cap_add:
       - NET_ADMIN
