@@ -1,3 +1,3 @@
 from .plugins import PluginBase
-from .proxy import ProxyConnection
+from .proxy import ProxyConnection, ProxyStream
 from .shared import *

@@ -1,9 +1,10 @@
 import asyncio
+import dataclasses
 import logging
+from asyncio import Task
 from typing import TYPE_CHECKING
 
-import mitmproxy_wireguard as wireguard
-
+from .stream import ProxyStream
 from ..shared import Metadata, ConnectionDirection, ProxyDirection, FilterAction
 
 if TYPE_CHECKING:
@@ -15,33 +16,65 @@ logger = logging.getLogger(__name__)
 class ProxyConnection:
     BUFFER_SIZE = 4096
 
-    def __init__(self, pm: "PluginManager", from_connection: wireguard.TcpStream, to_connection: wireguard.TcpStream,
-                 src_addr, dst_addr, direction: ProxyDirection):
+    def __init__(self, pm: "PluginManager", streams: dict[ConnectionDirection, ProxyStream],
+                 src_addr: tuple[str, int], dst_addr: tuple[str, int], direction: ProxyDirection):
         self._pm = pm
-        self._from_connection = from_connection
-        self._to_connection = to_connection
-        self._src_addr = src_addr
-        self._dst_addr = dst_addr
-        self._direction = direction
-        self._from_to_task = asyncio.create_task(self._read_forward_task(self._from_connection, self._to_connection))
-        self._to_from_task = asyncio.create_task(self._read_forward_task(self._to_connection, self._from_connection))
-        self._context = {}
+        self._streams: dict[ConnectionDirection, ProxyStream] = streams
+        self._tasks: dict[ConnectionDirection, Task] | None = None
+        self._context: dict[ProxyDirection, bytes] = {}
+        self._metadata = Metadata(src_addr[0], src_addr[1], dst_addr[0], dst_addr[1], direction)
+
+    def init(self):
+        self._tasks = {
+            ConnectionDirection.TO_SERVER: asyncio.create_task(self._read_forward_task(ConnectionDirection.TO_SERVER)),
+            ConnectionDirection.TO_CLIENT: asyncio.create_task(self._read_forward_task(ConnectionDirection.TO_CLIENT))
+        }
 
     async def wait_closed(self):
-        await asyncio.gather(self._from_to_task, self._to_from_task)
+        if self._tasks is None:
+            self.init()
+        await asyncio.gather(*self._tasks.values())
 
-    async def _read_forward_task(self, from_conn, to_conn):
-        proxy_direction = self._direction if from_conn == self._from_connection else ~self._direction
-        connection_direction = ConnectionDirection.TO_SERVER if proxy_direction == self._direction else ConnectionDirection.TO_CLIENT
+    @property
+    def streams(self):
+        return self._streams
 
-        metadata = Metadata(self._src_addr[0], self._src_addr[1], self._dst_addr[0], self._dst_addr[1],
-                            (proxy_direction, connection_direction))
+    def wrap(self, streams: dict[ConnectionDirection, ProxyStream]):
+        for direction, stream in streams.items():
+            if self._streams[direction].closing:
+                continue
+
+            # Only interrupt if the reading task has already started
+            if self._tasks is not None:
+                self._streams[direction].interrupt()
+
+            self._streams[direction] = stream
+
+    @property
+    def metadata(self):
+        return self._metadata
+
+    async def _read_forward_task(self, to_direction: ConnectionDirection):
+        initial_proxy_direction = self._metadata.direction
+        proxy_direction = initial_proxy_direction if to_direction == ConnectionDirection.TO_SERVER else ~initial_proxy_direction
+
+        if proxy_direction == initial_proxy_direction:
+            metadata = dataclasses.replace(self._metadata, direction=(proxy_direction, to_direction))
+        else:
+            # If it's a returning packet, also swap src and dst
+            metadata = Metadata(self._metadata.dst_ip, self._metadata.dst_port, self._metadata.src_ip,
+                                self._metadata.src_port, (proxy_direction, to_direction))
 
         self._context[proxy_direction] = b""
 
         while True:
+            from_stream = self._streams[~to_direction]
             try:
-                data = await from_conn.read(self.BUFFER_SIZE)
+                data = await from_stream.read(self.BUFFER_SIZE)
+                # If read got interrupted, reset the interrupt and start loop again, using new stream
+                if from_stream.interrupted:
+                    from_stream.reset_interrupt()
+                    continue
             except OSError:
                 data = b""
 
@@ -49,8 +82,8 @@ class ProxyConnection:
             if len(data) == 0:
                 # write_eof() also closes
                 try:
-                    to_conn.write_eof()
-                    from_conn.close()
+                    self._streams[~to_direction].close(True)
+                    self._streams[to_direction].close()
                 except OSError:
                     pass
                 return
@@ -65,8 +98,8 @@ class ProxyConnection:
             if action is not None:
                 (action, data) = action
                 if action == FilterAction.REJECT:
-                    from_conn.close()
-                    to_conn.close()
+                    self._streams[~to_direction].close()
+                    self._streams[to_direction].close()
                     return
 
             data = await self._pm.tcp_encrypt(self, metadata, data)
@@ -75,7 +108,6 @@ class ProxyConnection:
             logger.debug(f"[TCP] %s %s", side, data)
 
             try:
-                to_conn.write(data)
-                await to_conn.drain()
+                await self._streams[to_direction].write(data)
             except OSError:
                 pass

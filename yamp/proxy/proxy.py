@@ -6,7 +6,8 @@ import mitmproxy_wireguard as wireguard
 
 from .config import load_config
 from .connection import ProxyConnection
-from ..shared import FilterAction, ProxyDirection, Metadata
+from .stream import WireguardStream
+from ..shared import FilterAction, ProxyDirection, ConnectionDirection, Metadata
 
 logger = logging.getLogger(__name__)
 
@@ -68,10 +69,13 @@ class Proxy:
         direction = ProxyDirection.INBOUND if to_server == self._proxy_server else ProxyDirection.OUTBOUND
 
         forward_connection = await to_server.new_connection(src_addr, dst_addr)
+        streams = {ConnectionDirection.TO_CLIENT: WireguardStream(connection),
+                   ConnectionDirection.TO_SERVER: WireguardStream(forward_connection)}
 
-        connection = ProxyConnection(self._pm, connection, forward_connection, src_addr, dst_addr, direction)
+        connection = ProxyConnection(self._pm, streams, src_addr, dst_addr, direction)
         try:
             await self._pm.tcp_new_connection(connection)
+            connection.init()
             await connection.wait_closed()
             await self._pm.tcp_connection_closed(connection)
         except Exception as e:
