@@ -14,6 +14,9 @@ COPY requirements.txt /requirements.txt
 
 RUN pip install --no-cache-dir -r /requirements.txt
 
+COPY filter_engine /filter_engine
+
+RUN pip install --no-cache-dir /filter_engine
 
 FROM python:3.11-slim
 
