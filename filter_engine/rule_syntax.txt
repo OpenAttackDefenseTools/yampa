@@ -1,0 +1,16 @@
+RULES := RULE; [RULES]
+
+RULE := ACTION CONNECTION "::" MATCHERS 
+
+ACTION := (DROP | ALERT(TAGS) | ACCEPT)
+
+TAGS := TAGS, "'" $tag ""'" 
+
+CONNECTION := DIRECTION["( "PORTS ")"]
+
+DIRECTION := (IN | OUT)
+
+PORTS := "("$vulnbox_port [, $external_port]")"
+
+MATCHERS = MATCHER MATCHERS
+MATCHER = "("$regex" [, FLOW: (set | unset | is_set)])"

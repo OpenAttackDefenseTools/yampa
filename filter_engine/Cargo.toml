@@ -1,0 +1,12 @@
+[package]
+name = "rust_filter_engine"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+nom = "~7.1.1"
+rayon = "~1.6.1"
+tokio = { version = "~1.23.0", features = ["full"] }
+regex = "1"
