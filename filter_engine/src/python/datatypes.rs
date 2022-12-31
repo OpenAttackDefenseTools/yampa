@@ -25,11 +25,21 @@ pub struct PyAction {
 }
 
 #[pyclass]
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum PyActionType {
     Accept,
     Alert,
     Drop,
+}
+
+#[pymethods]
+impl PyEffects {
+    fn __str__<'a>(&self, _py: Python<'a>) -> String {
+        format!(
+            "PyEffects {{action: {:?}, message: {:?}, tags: {:?}, set_flows: {:?},}}",
+            &self.action, &self.message, &self.tags, &self.flow_sets
+        )
+    }
 }
 
 impl From<Action> for PyAction {
