@@ -102,7 +102,7 @@ impl Rule {
                 .iter()
                 .all(|m| match m {
                     Matcher::Regex(r) => r.is_match(data),
-                    Matcher::FlowIsSet(s) => flowbits.contains(s),
+                    FlowIsSet(s) => flowbits.contains(s)
                 })
                 .then_some(self.effects.clone())
         } else {

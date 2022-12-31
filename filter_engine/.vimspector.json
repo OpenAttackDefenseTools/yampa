@@ -1,0 +1,29 @@
+{
+    "$schema": "https://puremourning.github.io/vimspector/schema/vimspector.schema.json#",
+    "configurations": {
+        "launch": {
+            "adapter": "CodeLLDB",
+            "filetypes": [
+                "rust"
+            ],
+            "configuration": {
+                "request": "launch",
+                "program": "${workspaceRoot}/target/debug/rust_filter_engine"
+            }
+        },
+        "attach": {
+            "adapter": "CodeLLDB",
+            "filetypes": [
+                "rust",
+                "c",
+                "cpp",
+                "jai"
+            ],
+            "configuration": {
+                "request": "attach",
+                "program": "${workspaceRoot}/${fileBasenameNoExtension}",
+                "PID": "${PID}"
+            }
+        }
+    }
+}

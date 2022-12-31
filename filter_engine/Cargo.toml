@@ -20,6 +20,7 @@ crate-type = ["cdylib"]
 [dependencies]
 anyhow = "1.0.68"
 nom = "~7.1.1"
+itertools = "~0.10.5"
 rayon = "~1.6.1"
 pyo3 = { version = "0.17.3", features = ["extension-module", "anyhow"] }
 pyo3-asyncio = { version = "0.17", features = ["tokio-runtime"] }
