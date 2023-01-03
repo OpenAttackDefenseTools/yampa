@@ -177,8 +177,7 @@ fn parse_direction(i: &[u8]) -> IResult<&[u8], Direction> {
 }
 
 fn parse_direction_in(i: &[u8]) -> IResult<&[u8], Direction> {
-    let (i, (_, opt_ports)) =
-        tuple((tag("IN"), opt(tuple((ws, parse_direction_args)))))(i)?;
+    let (i, (_, opt_ports)) = tuple((tag("IN"), opt(tuple((ws, parse_direction_args)))))(i)?;
 
     let ports = opt_ports.map(|(_, p)| p).unwrap_or(RulePorts {
         ours: RulePort::All,
@@ -189,8 +188,7 @@ fn parse_direction_in(i: &[u8]) -> IResult<&[u8], Direction> {
 }
 
 fn parse_direction_out(i: &[u8]) -> IResult<&[u8], Direction> {
-    let (i, (_, opt_ports)) =
-        tuple((tag("OUT"), opt(tuple((ws, parse_direction_args)))))(i)?;
+    let (i, (_, opt_ports)) = tuple((tag("OUT"), opt(tuple((ws, parse_direction_args)))))(i)?;
 
     let ports = opt_ports.map(|(_, p)| p).unwrap_or(RulePorts {
         ours: RulePort::All,
@@ -219,10 +217,8 @@ fn parse_port_number(i: &[u8]) -> IResult<&[u8], u16> {
 }
 
 fn parse_port_tuple(i: &[u8]) -> IResult<&[u8], RulePorts> {
-    let (i, (our_port, their_port)) = tuple((
-        parse_port_number,
-        opt(tuple((tag(","), parse_port_number))),
-    ))(i)?;
+    let (i, (our_port, their_port)) =
+        tuple((parse_port_number, opt(tuple((tag(","), parse_port_number)))))(i)?;
 
     Ok((
         i,
@@ -255,10 +251,7 @@ pub fn parse_matchers_list(i: &[u8]) -> IResult<&[u8], Vec<Matcher>> {
     };
 
     let parse_flow_set = |i| {
-        let (i, (_, s)) = tuple((
-            tag("SET"),
-            delimited(tag("("), parse_quoted, tag(")")),
-        ))(i)?;
+        let (i, (_, s)) = tuple((tag("SET"), delimited(tag("("), parse_quoted, tag(")"))))(i)?;
         Ok((i, Matcher::FlowIsSet(s)))
     };
 

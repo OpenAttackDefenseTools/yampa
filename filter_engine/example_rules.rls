@@ -1,7 +1,4 @@
 # Simple outgoing flag format
 #"FLAG\{[A-Za-z0-9]+\}"
 
-ACCEPT("hello") OUT(8080) :: ("FLAG\{[A-Za-z0-9]+\}");
-
-# possible buffer overflow
-ALERT("asdf", flow: "sdf") IN :: ("FLAG\{[A-Za-z0-9]+\}", is_set(""));
+DROP("contains flag") FLOWS("flag", "test") : OUT(1337) : "FLAG\{[A-Za-z0-9/.]+\}" 

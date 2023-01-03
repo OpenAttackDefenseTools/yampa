@@ -28,11 +28,17 @@ impl Add<&Effect> for Effects {
     type Output = Effects;
 
     fn add(self, rhs: &Effect) -> Self::Output {
-        self + (match rhs {
+        self + Effects::from(rhs)
+    }
+}
+
+impl From<&Effect> for Effects {
+    fn from(effect: &Effect) -> Self {
+        match effect {
             Effect::Action(a) => Effects::empty().with_action(a.clone()),
             Effect::Tag(tags) => Effects::empty().with_tags(tags.clone()),
             Effect::FlowSet(f) => Effects::empty().with_flow_sets(f.clone()),
-        })
+        }
     }
 }
 
