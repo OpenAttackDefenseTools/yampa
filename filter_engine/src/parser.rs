@@ -25,7 +25,7 @@ use crate::datatypes::RulePorts;
 use crate::datatypes::Rules;
 
 pub fn parse(rules_string: String) -> Result<Rules, String> {
-    let (s, f): (Vec<_>, Vec<_>) = rules_string
+    let (s, f): (Vec<_>, Vec<_>) = rules_string.trim()
         .split_inclusive(|c| c == ';')
         .map(|rs| rs.trim().as_bytes())
         .map(|rs| (rs, parse_rule(rs)))
