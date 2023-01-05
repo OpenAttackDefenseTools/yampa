@@ -1,12 +1,12 @@
 import os
+from dataclasses import dataclass
 from typing import Set
-from yamp import *
 import logging
 import asyncio
 
-from filter_engine import create_filterengine_from_ruleset, PyActionType
+from yamp import *
 
-from dataclasses import dataclass
+from filter_engine import create_filterengine_from_ruleset, PyActionType
 
 
 @dataclass()
@@ -50,7 +50,6 @@ class FilterEnginePlugin(PluginBase):
                          context: dict[ProxyDirection, bytes]) -> None | tuple[FilterAction, bytes | None]:
         engine = await self.engine
 
-        logger.info("Filter with context %s", context)
         c = ConnectionInfo("", "", "")
 
         match metadata.direction:
@@ -64,7 +63,7 @@ class FilterEnginePlugin(PluginBase):
                 c.home_port = str(metadata.src_port)
 
         # TODO: add flow bits (Idk who should manage them)
-        effect = await engine.filter(c, data, list(self.flow_bits[connection]))
+        effect = await engine.filter(c, context[metadata.direction[0]], list(self.flow_bits[connection]))
 
         [self.flow_bits[connection].add(bit) for bit in effect.flow_sets]
 
