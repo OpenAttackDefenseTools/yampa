@@ -1,4 +1,4 @@
-use crate::datatypes::Action;
+use crate::datatypes::{Action, ProxyDirection};
 use crate::datatypes::Effects;
 use pyo3::prelude::*;
 
@@ -32,9 +32,48 @@ pub enum PyActionType {
     Drop,
 }
 
+#[pyclass]
+#[derive(Clone)]
+pub struct PyMetadata {
+    #[pyo3(get)]
+    pub(crate) inner_port: u16,
+    #[pyo3(get)]
+    pub(crate) outer_port: u16,
+    #[pyo3(get)]
+    pub(crate) direction: PyProxyDirection,
+}
+
+#[pyclass]
+#[derive(Debug, Clone, Copy)]
+pub enum PyProxyDirection {
+    InBound,
+    OutBound,
+}
+
+#[pymethods]
+impl PyMetadata {
+    #[new]
+    fn new(inner_port: u16, outer_port: u16, direction: PyProxyDirection) -> Self {
+        Self {
+            inner_port,
+            outer_port,
+            direction,
+        }
+    }
+}
+
+impl From<PyProxyDirection> for ProxyDirection {
+    fn from(direction: PyProxyDirection) -> Self {
+        match direction {
+            PyProxyDirection::InBound => ProxyDirection::InBound,
+            PyProxyDirection::OutBound => ProxyDirection::OutBound,
+        }
+    }
+}
+
 #[pymethods]
 impl PyEffects {
-    fn __str__<'a>(&self, _py: Python<'a>) -> String {
+    fn __str__(&self, _py: Python) -> String {
         format!(
             "PyEffects {{action: {:?}, message: {:?}, tags: {:?}, set_flows: {:?},}}",
             &self.action, &self.message, &self.tags, &self.flow_sets

@@ -1,5 +1,5 @@
 use super::Rule;
-use super::{Action, ConnectionDirection, Direction, Effects, Matcher, RulePort, RulePorts};
+use super::{Action, ProxyDirection, Direction, Effects, Matcher, RulePort, RulePorts};
 
 fn match_ports(rule_ports: &RulePorts, home_port: u16, out_port: u16) -> bool {
     if matches!(
@@ -19,14 +19,14 @@ fn match_ports(rule_ports: &RulePorts, home_port: u16, out_port: u16) -> bool {
 
 fn match_direction(
     direction: &Direction,
-    connection: ConnectionDirection,
+    connection: ProxyDirection,
     home_port: u16,
     out_port: u16,
 ) -> bool {
     if let Direction::InBound(rps) = direction {
-        matches!(connection, ConnectionDirection::InBound) && match_ports(rps, home_port, out_port)
+        matches!(connection, ProxyDirection::InBound) && match_ports(rps, home_port, out_port)
     } else if let Direction::OutBound(rps) = direction {
-        matches!(connection, ConnectionDirection::OutBound) && match_ports(rps, home_port, out_port)
+        matches!(connection, ProxyDirection::OutBound) && match_ports(rps, home_port, out_port)
     } else {
         false
     }
@@ -94,7 +94,7 @@ impl Rule {
         data: &[u8],
         home_port: u16,
         out_port: u16,
-        direction: ConnectionDirection,
+        direction: ProxyDirection,
         flowbits: &Vec<String>,
     ) -> Option<Effects> {
         if match_direction(&self.direction, direction, home_port, out_port) {

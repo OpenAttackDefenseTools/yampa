@@ -45,7 +45,7 @@ pub enum Direction {
 }
 
 #[derive(Debug, Clone)]
-pub enum ConnectionDirection {
+pub enum ProxyDirection {
     InBound,
     OutBound,
 }

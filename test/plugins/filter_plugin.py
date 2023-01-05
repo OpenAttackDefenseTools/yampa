@@ -1,19 +1,11 @@
 import os
-from dataclasses import dataclass
 from typing import Set
 import logging
 import asyncio
 
 from yamp import *
 
-from filter_engine import create_filterengine_from_ruleset, PyActionType
-
-
-@dataclass()
-class ConnectionInfo:
-    home_port: str
-    dst_port: str
-    direction: str
+from filter_engine import *
 
 
 def constructor():
@@ -50,20 +42,18 @@ class FilterEnginePlugin(PluginBase):
                          context: dict[ProxyDirection, bytes]) -> None | tuple[FilterAction, bytes | None]:
         engine = await self.engine
 
-        c = ConnectionInfo("", "", "")
-
-        match metadata.direction:
-            case ProxyDirection.INBOUND | (ProxyDirection.INBOUND, _):
-                c.direction = "IN"
-                c.home_port = str(metadata.dst_port)
-                c.dst_port = str(metadata.src_port)
-            case ProxyDirection.OUTBOUND | (ProxyDirection.OUTBOUND, _):
-                c.direction = "OUT"
-                c.dst_port = str(metadata.dst_port)
-                c.home_port = str(metadata.src_port)
+        match metadata.direction[0]:
+            case ProxyDirection.INBOUND:
+                pymetadata = PyMetadata(inner_port=metadata.dst_port, outer_port=metadata.src_port,
+                                        direction=PyProxyDirection.InBound)
+            case ProxyDirection.OUTBOUND:
+                pymetadata = PyMetadata(inner_port=metadata.src_port, outer_port=metadata.dst_port,
+                                        direction=PyProxyDirection.OutBound)
+            case _:
+                pymetadata = PyMetadata(0, 0, PyProxyDirection.InBound)
 
         # TODO: add flow bits (Idk who should manage them)
-        effect = await engine.filter(c, context[metadata.direction[0]], list(self.flow_bits[connection]))
+        effect = await engine.filter(pymetadata, context[metadata.direction[0]], list(self.flow_bits[connection]))
 
         [self.flow_bits[connection].add(bit) for bit in effect.flow_sets]
 
