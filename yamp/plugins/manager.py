@@ -23,7 +23,10 @@ class PluginManager(PluginBase):
         found_plugins = []
         with os.scandir("./plugins") as scanner:
             for candidate in scanner:
-                if candidate.is_dir():
+                if candidate.name.startswith("."):
+                    # Ignore
+                    pass
+                elif candidate.is_dir():
                     if not os.path.isfile(os.path.join(candidate.path, "__init__.py")):
                         logger.info("... skipping directory %s: does not have __init__.py", candidate)
                         continue
