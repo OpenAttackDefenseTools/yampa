@@ -1,4 +1,0 @@
-# Simple outgoing flag format
-#"FLAG\{[A-Za-z0-9]+\}"
-
-DROP("contains flag") FLOWS("flag", "test") : OUT(1337) : "FLAG\{[A-Za-z0-9/.]+\}" 

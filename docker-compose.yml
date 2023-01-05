@@ -18,6 +18,7 @@ services:
       - "51822:51822/udp"
     volumes:
       - ${PLUGIN_DIR-./plugins}:/plugins:ro
+      - ${RULES_DIR-./rules}:/rules:ro
       - ./dependencies:/dependencies:ro
 
   test_server:

@@ -278,6 +278,9 @@ cython_debug/
 
 # End of https://www.toptal.com/developers/gitignore/api/python,intellij
 
+.vimspector.json
+.vim
+
 .idea/
 .env-test
 
@@ -286,3 +289,8 @@ dependencies/*
 
 plugins/*
 !plugins/.keep
+
+rules/*
+!rules/.keep
+!rules/example_rules.rls
+!rules/rule_syntax.txt
