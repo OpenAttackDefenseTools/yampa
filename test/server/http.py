@@ -23,3 +23,11 @@ async def legitimate():
 @app.get("/exploit/AAAAAAAAAAAAAAAAAAAAAAA")
 async def exploit():
     return {"flag": gen_flag()}
+
+@app.get("/genericwebsite/login")
+async def genericwebsite_login():
+    return {"loggedin": True}
+
+@app.get("/genericwebsite/flagstore")
+async def genericwebsite_flagstore():
+    return {"flag": gen_flag()}
