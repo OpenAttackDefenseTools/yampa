@@ -35,10 +35,6 @@ class ProxyConnection:
             self.init()
         await asyncio.gather(*self._tasks.values())
 
-    @property
-    def streams(self):
-        return self._streams
-
     def wrap(self, streams: dict[ConnectionDirection, WrapperStream]):
         for direction, new_stream in streams.items():
             old_stream = self._streams[direction]
