@@ -1,5 +1,6 @@
 import secrets
 import string
+from typing import Union
 
 from fastapi import FastAPI
 
@@ -26,8 +27,13 @@ async def exploit():
 
 @app.get("/genericwebsite/login")
 async def genericwebsite_login():
-    return {"loggedin": True}
+    return {
+        "login-success" : True
+    }
 
 @app.get("/genericwebsite/flagstore")
-async def genericwebsite_flagstore():
-    return {"flag": gen_flag()}
+async def genericwebsite_flagstore(user : Union[str, None] = None):
+    return {
+        "flag": gen_flag(),
+        "user": (user if user != None else "you are not logged in")
+    }

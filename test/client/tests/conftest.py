@@ -24,6 +24,9 @@ def is_filtered(request):
 def hostname(is_filtered):
     return "10.2.3.4" if is_filtered else "testserver"  # if os.environ["YAMP_TEST_CLIENT"] == "outside" else "10.2.3.4"
 
+@pytest.fixture(scope="session", params=["withLogin", "withoutLogin"])
+def do_login(request):
+    return request.param == "withLogin"
 
 @pytest.fixture(scope="session", params=["http", "https"])
 def http_session(request, hostname):

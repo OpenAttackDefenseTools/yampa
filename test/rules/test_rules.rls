@@ -1,4 +1,6 @@
 # Simple outgoing flag format
 #"FLAG\{[A-Za-z0-9]+\}"
-FLOW("loggedin") : OUT(1337) : "loggedin";
-DROP("contains flag") : OUT(1337) : "TESTFLAG_[A-Za-z0-9/.]+" SET("loggedin");
+FLOWS("genericwebsite") : IN : "/genericwebsite";
+ALERT("logging in")  FLOWS("loggedin") : OUT : "login-success" SET("genericwebsite");
+DROP("contains flag for not-loggedin user") : OUT : "TESTFLAG_[A-Za-z0-9/.]+" "you are not logged in" SET("genericwebsite");
+DROP("contains flag but user visited login page") : OUT : "TESTFLAG_[A-Za-z0-9/.]+" SET("genericwebsite") SET("loggedin");
