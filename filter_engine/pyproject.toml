@@ -14,5 +14,8 @@ classifiers = [
     "Development Status :: 3 - Alpha",
 ]
 
+[project.scripts]
+filter_engine_lint = "filter_engine:rules_lint"
+
 [tool.maturin]
 profile = "release"

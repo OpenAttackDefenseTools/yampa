@@ -9,6 +9,7 @@ use python::*;
 #[pymodule]
 fn filter_engine(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(create_filterengine_from_ruleset, m)?)?;
+    m.add_function(wrap_pyfunction!(rules_lint, m)?)?;
 
     m.add_class::<PyEffects>()?;
     m.add_class::<PyAction>()?;
