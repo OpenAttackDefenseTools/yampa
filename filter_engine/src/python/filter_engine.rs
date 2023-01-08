@@ -1,4 +1,5 @@
 use std::sync::Arc;
+use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use rayon::prelude::*;
 use crate::datatypes::{Rules, Effects};
@@ -40,7 +41,7 @@ pub fn create_filterengine_from_ruleset(py: Python<'_>, ruleset: String) -> PyRe
                 .fold("".to_string(),
                       |rules, rule| format!("{} {}", rules, rule));
 
-            let rules = parse(rules_string).unwrap();
+            let rules = parse(rules_string).map_err(|s| PyValueError::new_err(s))?;
 
             Ok(FilterEngine {
                 rules: Arc::new(rules)

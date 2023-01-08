@@ -52,22 +52,24 @@ class FilterEnginePlugin(PluginBase):
             case _:
                 pymetadata = PyMetadata(0, 0, PyProxyDirection.InBound)
 
-        # TODO: add flow bits (Idk who should manage them)
         effect = await engine.filter(pymetadata, context[metadata.direction[0]], list(self.flow_bits[connection]))
 
         [self.flow_bits[connection].add(bit) for bit in effect.flow_sets]
 
-        action = FilterAction.REJECT
-        match effect.action:
-            case PyActionType.Alert:
-                action = FilterAction.ALERT
-            case PyActionType.Accept:
-                action = FilterAction.ACCEPT
+        if effect.action is None:
+            return None
 
+        # TODO: write eve.json
         logger.info(
-            f"Packet in connection {connection}: Action taken: {action}{' with message ' + effect.message if effect.message else ''}, tagged with {', '.join(effect.tags)}")
+            f"Packet in connection {connection}: Action taken: {effect.action}{' with message ' + effect.message if effect.message else ''}, tagged with {', '.join(effect.tags)}")
 
-        return action, data
+        match effect.action:
+            case PyActionType.Accept:
+                return FilterAction.ACCEPT, data
+            case PyActionType.Alert:
+                return None
+            case PyActionType.Drop:
+                return FilterAction.REJECT, None
 
     # async def other_filter(self, direction: ProxyDirection, data: bytes) -> None | tuple[FilterAction, bytes | None]:
     #     return FilterAction.REJECT, None

@@ -27,11 +27,13 @@ pub enum Action {
 }
 
 pub type Port = u16;
+
 #[derive(Debug)]
 pub enum RulePort {
     Specific(Port),
     All,
 }
+
 #[derive(Debug)]
 pub struct RulePorts {
     pub ours: RulePort,

@@ -6,9 +6,7 @@ use pyo3::prelude::*;
 #[derive(Clone)]
 pub struct PyEffects {
     #[pyo3(get)]
-    pub(super) action: PyActionType,
-    #[pyo3(get)]
-    pub(super) message: String,
+    pub(super) action: Option<PyAction>,
     #[pyo3(get)]
     pub(super) tags: Vec<String>,
     #[pyo3(get)]
@@ -21,7 +19,7 @@ pub struct PyAction {
     #[pyo3(get)]
     pub(super) action: PyActionType,
     #[pyo3(get)]
-    pub(super) message: String,
+    pub(super) message: Option<String>,
 }
 
 #[pyclass]
@@ -72,11 +70,21 @@ impl From<PyProxyDirection> for ProxyDirection {
 }
 
 #[pymethods]
+impl PyAction {
+    fn __str__(&self, _py: Python) -> String {
+        format!(
+            "PyAction {{action: {:?}, message: {:?}}}",
+            &self.action, &self.message
+        )
+    }
+}
+
+#[pymethods]
 impl PyEffects {
     fn __str__(&self, _py: Python) -> String {
         format!(
-            "PyEffects {{action: {:?}, message: {:?}, tags: {:?}, set_flows: {:?},}}",
-            &self.action, &self.message, &self.tags, &self.flow_sets
+            "PyEffects {{action: {:?}, tags: {:?}, set_flows: {:?}}}",
+            &self.action.as_ref().map(|x| x.__str__(_py)), &self.tags, &self.flow_sets
         )
     }
 }
@@ -86,15 +94,15 @@ impl From<Action> for PyAction {
         match action {
             Action::Accept(x) => PyAction {
                 action: PyActionType::Accept,
-                message: x.unwrap_or("".into()),
+                message: x,
             },
             Action::Alert(x) => PyAction {
                 action: PyActionType::Alert,
-                message: x.unwrap_or("".into()),
+                message: x,
             },
             Action::Drop(x) => PyAction {
                 action: PyActionType::Drop,
-                message: x.unwrap_or("".into()),
+                message: x,
             },
         }
     }
@@ -102,28 +110,8 @@ impl From<Action> for PyAction {
 
 impl From<Effects> for PyEffects {
     fn from(effects: Effects) -> Self {
-        let mut message: String = "".into();
-        let action = if let Some(a) = effects.action {
-            match a {
-                Action::Accept(o) => {
-                    message = o.unwrap_or(String::new());
-                    PyActionType::Accept
-                }
-                Action::Alert(o) => {
-                    message = o.unwrap_or(String::new());
-                    PyActionType::Alert
-                }
-                Action::Drop(o) => {
-                    message = o.unwrap_or(String::new());
-                    PyActionType::Drop
-                }
-            }
-        } else {
-            PyActionType::Accept
-        };
-        Self {
-            action,
-            message,
+        PyEffects {
+            action: effects.action.map(PyAction::from),
             tags: effects.tags,
             flow_sets: effects.flow_sets,
         }
