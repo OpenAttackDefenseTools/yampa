@@ -1,10 +1,18 @@
 from enum import Enum
 from typing import List
 
+class PyEffects:
+    action: PyAction | None
+    tags: List[str]
+    flow_sets: List[str]
+
+    def __str__(self) -> str: ...
 
 class PyAction:
     action: PyActionType
-    message: str
+    message: str | None
+
+    def __str__(self) -> str: ...
 
 
 class PyActionType(Enum):
@@ -24,15 +32,6 @@ class PyMetadata:
 class PyProxyDirection(Enum):
     InBound = 1,
     OutBound = 2,
-
-
-class PyEffects:
-    action: PyActionType
-    message: str
-    tags: List[str]
-    flow_sets: List[str]
-
-    def __str__(self) -> str: ...
 
 
 class FilterEngine:
