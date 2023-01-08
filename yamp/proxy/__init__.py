@@ -1,4 +1,4 @@
 from .connection import ProxyConnection
 from .proxy import Proxy
 from .config import load_config, ProxyConfig, WireguardConfig
-from .stream import ProxyStream
+from .stream import ProxyStream, WrapperStream

@@ -30,27 +30,26 @@ def wrap_ssl(function):
                 # we just don't seem to get the SSLWantWriteError. Instead, the outgoing BIO is just filled with
                 # data and OpenSSL returns as if nothing happened.
                 if self._outgoing.pending > 0:
-                    await self._stream.write(self._outgoing.read())
+                    await self.stream.write(self._outgoing.read())
 
                 return ret
             except ssl.SSLWantReadError:
                 if self._outgoing.pending > 0:
-                    await self._stream.write(self._outgoing.read())
+                    await self.stream.write(self._outgoing.read())
 
-                data = await self._stream.read(4096)
+                data = await self.stream.read(4096)
                 if len(data) == 0:
                     return b""
                 self._incoming.write(data)
             except ssl.SSLWantWriteError:
-                await self._stream.write(self._outgoing.read())
+                await self.stream.write(self._outgoing.read())
 
     return wrapper
 
 
-class EncryptedStream(ProxyStream, ABC):
-    def __init__(self, stream: ProxyStream):
+class EncryptedStream(WrapperStream):
+    def __init__(self):
         super().__init__()
-        self._stream = stream
         self._incoming = ssl.MemoryBIO()
         self._outgoing = ssl.MemoryBIO()
         self._ssl: ssl.SSLObject | None = None
@@ -69,12 +68,12 @@ class EncryptedStream(ProxyStream, ABC):
         self._ssl.write(data)
 
     def do_close(self, force_close: bool):
-        return self._stream.close(force_close)
+        return self.stream.close(force_close)
 
 
 class EncryptedServerStream(EncryptedStream):
-    def __init__(self, stream: ProxyStream, cert: str, key: str):
-        super().__init__(stream)
+    def __init__(self, cert: str, key: str):
+        super().__init__()
         self._cert = cert
         self._key = key
 
@@ -89,8 +88,8 @@ class EncryptedServerStream(EncryptedStream):
 
 
 class EncryptedClientStream(EncryptedStream):
-    def __init__(self, stream: ProxyStream, cert: str):
-        super().__init__(stream)
+    def __init__(self, cert: str):
+        super().__init__()
         self._cert = cert
 
     async def create_ssl_object(self) -> ssl.SSLObject:
@@ -107,7 +106,5 @@ class TestSSLTerminationPlugin(PluginBase):
         cert = os.environ["HTTPS_CERTIFICATE"]
         key = os.environ["HTTPS_KEY"]
 
-        connection.wrap({ConnectionDirection.TO_SERVER: EncryptedClientStream(
-            connection.streams[ConnectionDirection.TO_SERVER], cert),
-            ConnectionDirection.TO_CLIENT: EncryptedServerStream(
-                connection.streams[ConnectionDirection.TO_CLIENT], cert, key)})
+        connection.wrap({ConnectionDirection.TO_SERVER: EncryptedClientStream(cert),
+                         ConnectionDirection.TO_CLIENT: EncryptedServerStream(cert, key)})

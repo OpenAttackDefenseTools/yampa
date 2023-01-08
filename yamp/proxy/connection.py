@@ -4,7 +4,7 @@ import logging
 from asyncio import Task
 from typing import TYPE_CHECKING
 
-from .stream import ProxyStream
+from .stream import ProxyStream, WrapperStream
 from ..shared import Metadata, ConnectionDirection, ProxyDirection, FilterAction
 
 if TYPE_CHECKING:
@@ -39,16 +39,18 @@ class ProxyConnection:
     def streams(self):
         return self._streams
 
-    def wrap(self, streams: dict[ConnectionDirection, ProxyStream]):
-        for direction, stream in streams.items():
-            if self._streams[direction].closing:
+    def wrap(self, streams: dict[ConnectionDirection, WrapperStream]):
+        for direction, new_stream in streams.items():
+            old_stream = self._streams[direction]
+            if old_stream.closing:
                 continue
 
             # Only interrupt if the reading task has already started
             if self._tasks is not None:
-                self._streams[direction].interrupt()
+                old_stream.interrupt()
 
-            self._streams[direction] = stream
+            self._streams[direction] = new_stream
+            new_stream.stream = old_stream
 
     @property
     def metadata(self):

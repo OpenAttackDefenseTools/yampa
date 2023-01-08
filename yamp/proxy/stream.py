@@ -62,6 +62,21 @@ class ProxyStream(ABC):
         pass
 
 
+class WrapperStream(ProxyStream, ABC):
+    def __init__(self):
+        super().__init__()
+        self._stream: ProxyStream | None = None
+
+    @property
+    def stream(self) -> ProxyStream:
+        assert (self._stream is not None)
+        return self._stream
+
+    @stream.setter
+    def stream(self, stream: ProxyStream):
+        self._stream = stream
+
+
 class WireguardStream(ProxyStream):
     def __init__(self, stream: wireguard.TcpStream):
         super().__init__()
