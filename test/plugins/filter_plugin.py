@@ -61,7 +61,7 @@ class FilterEnginePlugin(PluginBase):
 
         # TODO: write eve.json
         logger.info(
-            f"Packet in connection {connection}: Action taken: {effect.action}{' with message ' + effect.message if effect.message else ''}, tagged with {', '.join(effect.tags)}")
+            f"Packet in connection {connection}: Action taken: {effect.action}, tagged with {', '.join(effect.tags)}")
 
         match effect.action:
             case PyActionType.Accept:
