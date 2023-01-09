@@ -67,9 +67,6 @@ class EncryptedStream(WrapperStream):
     async def do_write(self, data: bytes):
         self._ssl.write(data)
 
-    def do_close(self, force_close: bool):
-        return self.stream.close(force_close)
-
 
 class EncryptedServerStream(EncryptedStream):
     def __init__(self, cert: str, key: str):

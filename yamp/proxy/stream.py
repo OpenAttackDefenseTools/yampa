@@ -76,6 +76,10 @@ class WrapperStream(ProxyStream, ABC):
     def stream(self, stream: ProxyStream):
         self._stream = stream
 
+    def do_close(self, force_close: bool):
+        if self._stream is not None:
+            return self._stream.close(force_close)
+
 
 class WireguardStream(ProxyStream):
     def __init__(self, stream: wireguard.TcpStream):
