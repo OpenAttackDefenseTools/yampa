@@ -7,6 +7,10 @@ use super::{Action, Effect, Effects};
 impl Add for Effects {
     type Output = Effects;
 
+    /// Joins two effects together.
+    ///
+    /// The tags and flow_sets will be merged like a set union and the 'worse'
+    /// actin (`Drop` > `Alert` > `Accept`) will be chosen
     fn add(self, rhs: Self) -> Self::Output {
         let mut tags = self.tags.clone();
         tags.append(&mut rhs.tags.clone());
@@ -27,12 +31,17 @@ impl Add for Effects {
 impl Add<&Effect> for Effects {
     type Output = Effects;
 
+    /// Adds an `Effect` to an existing `Effects` struct
+    ///
+    /// The tags and flow_sets will be merged like a set union and the 'worse'
+    /// actin (`Drop` > `Alert` > `Accept`) will be chosen
     fn add(self, rhs: &Effect) -> Self::Output {
         self + Effects::from(rhs)
     }
 }
 
 impl From<&Effect> for Effects {
+    /// Maps an `Effect` to an `Effects` struct
     fn from(effect: &Effect) -> Self {
         match effect {
             Effect::Action(a) => Effects::empty().with_action(a.clone()),
@@ -43,6 +52,7 @@ impl From<&Effect> for Effects {
 }
 
 impl Effects {
+    /// Creates a new, empty set of effects
     pub fn empty() -> Self {
         Self {
             action: None,
@@ -51,6 +61,7 @@ impl Effects {
         }
     }
 
+    /// sets the action for the effects
     pub fn with_action(self, action: Action) -> Self {
         Self {
             action: Some(action),
@@ -58,6 +69,7 @@ impl Effects {
         }
     }
 
+    /// adds tags to the existing tags
     pub fn with_tags(self, add_tags: Vec<String>) -> Self {
         let mut tags = self.tags.clone();
         tags.append(&mut add_tags.clone());
@@ -66,6 +78,7 @@ impl Effects {
         Self { tags, ..self }
     }
 
+    /// adds flow strings to the existing flow strings
     pub fn with_flow_sets(self, add_flow_sets: Vec<String>) -> Self {
         let mut flow_sets = self.flow_sets.clone();
         flow_sets.append(&mut add_flow_sets.clone());

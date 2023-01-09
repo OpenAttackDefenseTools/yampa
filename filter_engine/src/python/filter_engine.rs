@@ -17,6 +17,7 @@ pub struct FilterEngine {
     pub(crate) rules: Arc<Rules>,
 }
 
+/// Instantiates a new filter_engine from a ruleset string
 #[pymethods]
 impl FilterEngine {
     /// Apply the filter rules and return a list of Effects.
@@ -43,6 +44,9 @@ fn parse_rulestring(ruleset: String) -> Result<Rules, String> {
     parse(rules_string)
 }
 
+/// Creates a new `FilterEngine` in an async function (from python).
+///
+/// You will need to create a task to await this result!
 #[pyfunction]
 pub fn create_filterengine_from_ruleset(py: Python<'_>, ruleset: String) -> PyResult<&PyAny> {
     pyo3_asyncio::tokio::future_into_py(py, async move {

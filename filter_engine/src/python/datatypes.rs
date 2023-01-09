@@ -2,6 +2,7 @@ use crate::datatypes::{Action, ProxyDirection};
 use crate::datatypes::Effects;
 use pyo3::prelude::*;
 
+/// Represents the effects of a rule in a easier form to use in python
 #[pyclass]
 #[derive(Clone)]
 pub struct PyEffects {
@@ -13,6 +14,7 @@ pub struct PyEffects {
     pub(super) flow_sets: Vec<String>,
 }
 
+/// Action type that is easier for python
 #[pyclass]
 #[derive(Clone)]
 pub struct PyAction {
@@ -22,6 +24,7 @@ pub struct PyAction {
     pub(super) message: Option<String>,
 }
 
+/// Enumeration to map to the python action enum
 #[pyclass]
 #[derive(Clone, Debug)]
 pub enum PyActionType {
@@ -79,6 +82,7 @@ impl PyAction {
     }
 }
 
+/// Format an Effect in python
 #[pymethods]
 impl PyEffects {
     fn __str__(&self, _py: Python) -> String {
@@ -90,6 +94,7 @@ impl PyEffects {
 }
 
 impl From<Action> for PyAction {
+    /// Maps an `Action ` to a `PyAction`
     fn from(action: Action) -> Self {
         match action {
             Action::Accept(x) => PyAction {
@@ -109,6 +114,7 @@ impl From<Action> for PyAction {
 }
 
 impl From<Effects> for PyEffects {
+    /// Maps an `Effects` struct to a `PyEffects`
     fn from(effects: Effects) -> Self {
         PyEffects {
             action: effects.action.map(PyAction::from),
