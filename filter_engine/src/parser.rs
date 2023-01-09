@@ -2,10 +2,10 @@ use nom::character::complete::{anychar, digit0};
 use regex::bytes::Regex;
 
 use nom::branch::alt;
-use nom::bytes::complete::{escaped, take_while, tag};
+use nom::bytes::complete::{escaped, tag, take_while};
 use nom::character::complete::{none_of, space1};
 use nom::combinator::opt;
-use nom::error::{make_error, ErrorKind, convert_error, VerboseError};
+use nom::error::{convert_error, make_error, ErrorKind, VerboseError};
 use nom::multi::separated_list0;
 use nom::sequence::{delimited, tuple};
 use nom::{Err, Finish, IResult};
@@ -41,10 +41,7 @@ pub fn parse(rules_string: String) -> Result<Rules, String> {
         .partition(|(_, result)| result.is_ok());
 
     match f.len() {
-        0 => Ok(s
-            .into_iter()
-            .map(|(_, r)| r.unwrap())
-            .collect()),
+        0 => Ok(s.into_iter().map(|(_, r)| r.unwrap()).collect()),
 
         _ => Err(format!(
             "Error parsing rules: {}",

@@ -101,4 +101,56 @@ TODO: `traffic_dump_wireguard.py`
 
 ## The Filter Engine
 
-TODO
+The current (very limited) filter engine is implemented in rust and used in 
+python using pyo3 bindings and the maturin build system.
+
+Rules are specified in a file and can be checked before the build time if they
+are syntactically correct.
+
+### Rules
+The rule format is as follows:
+
+RULE ::= EFFECTS `:` DIRECTION `:` MATCHERS `;`
+
+EFFECTS ::= (ACTION | TAGS | FLOWS)
+
+ACTION ::= (`ACCEPT` | `ALERT` | `DROP`)[`(`(QUOTED_STRING)`)`]
+
+TAGS ::= `TAGS(`{QUOTED_STRING}+`)`
+
+FLOWS ::= `FLOWS(`{QUOTED_STRING}+`)`
+
+DIRECTION ::= (`IN` | `OUT`)[`(`U16 [`,` U16] `)`]
+
+MATCHERS ::= (REGEX | FLOW)
+
+REGEX ::= QUOTED_STRING
+
+FLOW ::= `SET(`QUOTED_STRING`)`
+
+One rule might look like this:
+
+`DROP("contains flag") TAG("whatever") : OUT(8080) : "FLAG\{";`
+
+Here, a packet where the ascii bytes of `FLAG{` would be contained with the message
+"contains flag" and emits the tag "whatever"
+
+### Direction
+
+This part is optimized for what we think is the most likely needed on a regular
+basis: You can specify the direction as incoming or outgoing and then either no
+port (all ports match), one port, which is the port on the vulnbox side or two
+ports, in which case the first is the port on the vulnbox side and the second
+one is the other port. We think that the case where only one port is specified 
+will be the most required.
+
+### Flow bits
+
+Flow bits are currently quite limited. They are managed per connection by the
+python plugin, one can add flow bits as an effect of the rule and match them 
+in the matcher part.
+
+### Extendability
+
+The parser for the rules is written in `nom`, a powerful combination parser. It 
+is therefore quite easy to add capability to the rules. 
