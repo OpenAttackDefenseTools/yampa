@@ -289,6 +289,7 @@ dependencies/*
 
 plugins/*
 !plugins/.keep
+!plugins/filter_plugin.py
 
 rules/*
 !rules/.keep

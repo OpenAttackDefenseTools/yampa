@@ -8,7 +8,7 @@ from yamp import *
 
 
 def constructor():
-    return TestSSLTerminationPlugin()
+    return SSLTerminationPlugin()
 
 
 def wrap_ssl(function):
@@ -95,7 +95,7 @@ class EncryptedClientStream(EncryptedStream):
         return context.wrap_bio(self._incoming, self._outgoing, server_side=False)
 
 
-class TestSSLTerminationPlugin(PluginBase):
+class SSLTerminationPlugin(PluginBase):
     CONNECTION_MARKER = "SSL_TERMINATED_BY_PLUGIN"
 
     async def tcp_new_connection(self, connection: ProxyConnection) -> None:
