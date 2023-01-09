@@ -80,7 +80,24 @@ pip install -r some/requirements.txt --target=./dependencies
 
 ### Wrapping Connections
 
+If more complex cryptographic protocols are used or if you have other very specific requirements, the decryption and encryption hooks might not be powerful enough to implement the desired functionality. This case arises, for instance, in TLS. To handle such situations, a plugin can wrap a connection.
+
+By calling something like `my_connection.wrap()`, a plugin can take full and exclusive control over future read and write access to the specified stream(s). This way, the plugin has direct access to the underlying socket.
+
+Note that wrappers will not be removed when a plugin is unloaded or reloaded, to keep the connection alive. This might be problematic if you wrap a single connection twice.
+
+As a demonstration, see `./demo_plugins/ssl_termination_plugin.py`. For a more technical documentation, see `./yamp/proxy/connection.py`.
+
+
 ### Demo-Plugins
+
+To familiarize yourself with plugins, some demonstrations can be found in the `./demo_plugins` folder.
+
+**`my_awesome_plugin.py`** does some very basic filtering and logging for TCP connections. When a new TCP connection is built, we are notified by a logging message. If data is transmitted that contains the string `AAAAAAA`, the packet is dropped. If it contains the string `flag`, the packet is accepted. Otherwise, the filter ignores the packet. In the logging stage, we are notified about the data that is transmitted and about the action the filter has taken.
+
+**`my_more_complex_plugin.py`** demonstrates how packages can be used as plugins. It simply prints out the data transmitted via TCP connections and additionally makes sends it to a request catcher.
+
+TODO: `traffic_dump_wireguard.py`
 
 ## The Filter Engine
 
