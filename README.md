@@ -14,12 +14,12 @@ Since YAMP runs in docker, you hardly have to take care of prerequisites -- exce
 To setup YAMP, do the following:
 
 1. Clone the repository. (In the rest of the documentantion, `./` refers to the repository.)
-2. Follow the comments in `./generate-env.sh` (on lines 30, 39, 118 and 127) to set the key pairs for both sides (gamenet and vulnbox side) of the proxy. This script will provide you with a template environment, which is well-suited for tests, but it may have to be adjusted for your individual requirements during a CTF.
-3. Run `./generate-env.sh`. (You will have to re-run this every time you make adjustments to the script.)
-4. Set the following environment variables:
-	* Set `ENV_FILE` to point to the generated environment file, e.g. `ENV_FILE=".env"`).
-	* Set `RULES_DIR` to point to the directory where you want filter rules to be loaded from, e.g. `RULES_DIR="./rules"`
-	* Set `PLUGIN_DIR` to point to the directory where you want plugins to be loaded from, e.g. `PLUGIN_DIR="./plugins"`
+2. Follow the comments in `./generate-env.sh` (on lines 30, 39, 118 and 127) to set the key pairs for both sides (gamenet and vulnbox side) of the proxy.
+3. Run `./generate-env.sh`. This will yield a template environment, which is well-suited for tests, but it may have to be adjusted for your individual requirements during a CTF.
+4. Optionally, you can obtain more customizability by setting the following environment variables:
+	* Set `ENV_FILE` to point to the generated environment file. Default is `ENV_FILE=".env"`).
+	* Set `RULES_DIR` to point to the directory where you want filter rules to be loaded from. Default is `RULES_DIR="./rules"`.
+	* Set `PLUGIN_DIR` to point to the directory where you want plugins to be loaded from. Default is `PLUGIN_DIR="./plugins"`.
 
 At this point, YAMP should be ready to run. To start it, use the following command:
 
@@ -40,7 +40,9 @@ A plugin implements multiple hooks. The hooks have the following intended functi
 
 You can think of a data packet as walking through these stages in the above order.
 
-When multiple plugins are loaded, the respective hooks of all plugins are executed simultaneously with the same input parameters. Some hooks, like decryption, are meant to return data. Regarding the return value, only the first output that is not `None` is taken and processed further. That is, by returning `None`, a hook can indicate that a certain data packet is `None` of its business.
+When multiple plugins are loaded, the respective hooks of all plugins are executed one after the other with the same input parameters. When a hook returns `None`, the hook of the next plugin in sequence will be called. If a hook returns something different from `None` (for instance, when the decryption hook returns decrypted data), the rest of the chain is dropped and this output will be taken as the output of the chain. This means that by returning `None`, a hook can indicate that a certain data packet is `None` of its business and that the next plugin (if any) should take care of it.
+
+Exception to this are such hooks that don't have a return value, like logging, `tcp_new_connection` and `tcp_connection_close`. For these hooks, the respective implementations of all loaded plugins are executed in parallel.
 
 Find more details on the implementation of plugins in the section "Writing Plugins".
 
@@ -59,59 +61,26 @@ On a technical level, a plugin is a python module (or package) that exposes a fu
 def constructor() -> PluginBase
 ```
 
-That is, the constructor returns an instance of a subclass of `PluginBase`. You can use the constructor to do some initialization (like loading filter rules from a file).
+That is, the constructor returns an instance of a *direct* subclass of `PluginBase`. You can use the constructor to do some initialization (like loading filter rules from a file).
 
-The class `PluginBase` defines the available hooks and their signatures. To find out what hooks are available, look at `./yamp/plugins/base.py` or the following excerpt:
+The class `PluginBase` defines the available hooks and their signatures. To find out what hooks are available, what parameters they take and what output is expected, find the extensive documentation in `./yamp/plugins/base.py`, where all details are layed out.
+
+Each plugin has to implement all of the hooks. However, by default most of the hook implementations return `None`, which indicates that they should be ignored.
+
+### Third-Party Dependencies of Plugins
+
+If a plugin has third-party dependencies, they can be installed in `./dependencies`.
+
+For instance, when installing dependencies with `pip`, use the flag `--target=./dependencies` like so:
 
 ```
-class PluginBase:
-    async def tcp_new_connection(self, connection: ProxyConnection) -> None:
-        pass
-
-    async def tcp_connection_closed(self, connection: ProxyConnection) -> None:
-        pass
-
-    async def tcp_decrypt(self, connection: ProxyConnection, metadata: Metadata, data: bytes) -> None | bytes:
-        return data
-
-    async def tcp_filter(self, connection: ProxyConnection, metadata: Metadata, data: bytes,
-                         context: dict[ProxyDirection, bytes]) -> None | tuple[FilterAction, bytes | None]:
-        return None
-
-    async def tcp_log(self, connection: ProxyConnection, metadata: Metadata, data: bytes,
-                      action: None | tuple[FilterAction, bytes | None]) -> None:
-        pass
-
-    async def tcp_encrypt(self, connection: ProxyConnection, metadata: Metadata, data: bytes) -> None | bytes:
-        return data
-
-    async def udp_decrypt(self, metadata: Metadata, data: bytes) -> None | bytes:
-        return data
-
-    async def udp_filter(self, metadata: Metadata, data: bytes) -> None | tuple[FilterAction, bytes | None]:
-        return None
-
-    async def udp_log(self, metadata: Metadata, data: bytes, action: None | tuple[FilterAction, bytes | None]) -> None:
-        pass
-
-    async def udp_encrypt(self, metadata: Metadata, data: bytes) -> None | bytes:
-        return data
-
-    async def other_decrypt(self, direction: ProxyDirection, data: bytes) -> None | bytes:
-        return data
-
-    async def other_filter(self, direction: ProxyDirection, data: bytes) -> None | tuple[FilterAction, bytes | None]:
-        return None
-
-    async def other_log(self, direction: ProxyDirection, data: bytes,
-                        action: None | tuple[FilterAction, bytes | None]) -> None:
-        pass
-
-    async def other_encrypt(self, direction: ProxyDirection, data: bytes) -> None | bytes:
-        return data
+pip install requests --target=./dependencies
+pip install -r some/requirements.txt --target=./dependencies
 ```
 
-Each plugin has to implement all of the above hooks. However, by default most of the hook implementations return `None`, which indicates that they should be ignored.
+### Wrapping Connections
+
+### Demo-Plugins
 
 ## The Filter Engine
 
