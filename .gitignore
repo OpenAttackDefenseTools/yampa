@@ -294,3 +294,4 @@ rules/*
 !rules/.keep
 !rules/example_rules.rls
 !rules/rule_syntax.txt
+test/rules/eve.json
