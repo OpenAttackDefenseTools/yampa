@@ -99,7 +99,12 @@ class EncryptedClientStream(EncryptedStream):
 
 
 class TestSSLTerminationPlugin(PluginBase):
+    CONNECTION_MARKER = "SSL_TERMINATED_BY_PLUGIN"
+
     async def tcp_new_connection(self, connection: ProxyConnection) -> None:
+        if self.CONNECTION_MARKER in connection.extra:
+            return None
+
         if connection.metadata.dst_port != 443:
             return None
 
@@ -108,3 +113,6 @@ class TestSSLTerminationPlugin(PluginBase):
 
         connection.wrap({ConnectionDirection.TO_SERVER: EncryptedClientStream(cert),
                          ConnectionDirection.TO_CLIENT: EncryptedServerStream(cert, key)})
+
+        # Since wrapping is not undone on plugin unload
+        connection.extra[self.CONNECTION_MARKER] = True

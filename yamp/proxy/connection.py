@@ -2,7 +2,7 @@ import asyncio
 import dataclasses
 import logging
 from asyncio import Task
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from .stream import ProxyStream, WrapperStream
 from ..shared import Metadata, ConnectionDirection, ProxyDirection, FilterAction
@@ -23,6 +23,7 @@ class ProxyConnection:
         self._tasks: dict[ConnectionDirection, Task] | None = None
         self._context: dict[ProxyDirection, bytes] = {}
         self._metadata = Metadata(src_addr[0], src_addr[1], dst_addr[0], dst_addr[1], direction)
+        self.extra: dict[str, Any] = {}
 
     def init(self):
         self._tasks = {

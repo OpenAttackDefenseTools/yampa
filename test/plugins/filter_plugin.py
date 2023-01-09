@@ -36,7 +36,13 @@ class FilterEnginePlugin(PluginBase):
         self.flow_bits: dict[ProxyConnection | tuple[str, int, str, int], Set[str]] = {}
 
     async def tcp_new_connection(self, connection: ProxyConnection) -> None:
-        self.flow_bits[connection] = set()
+        # Persist flowbits across plugin reloads
+        flowbit_marker = "FILTER_ENGINE_FLOWBITS"
+
+        if flowbit_marker not in connection.extra:
+            connection.extra[flowbit_marker] = set()
+
+        self.flow_bits[connection] = connection.extra[flowbit_marker]
 
     async def tcp_connection_closed(self, connection: ProxyConnection) -> None:
         del self.flow_bits[connection]
