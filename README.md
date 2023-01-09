@@ -145,6 +145,9 @@ This allows for simple combination of the linter with the reload script like so:
  ./lint-rules.sh && ./reload.sh
 ```
 
+Furthermore, the filter plugin will automatically generate a log similar to suricata's [eve.json](https://github.com/OISF/suricata/blob/master/doc/userguide/output/eve/eve-json-format.rst).
+This log will be placed under `./rules/eve.json`.
+
 ### Rules
 The rule format is as follows:
 
