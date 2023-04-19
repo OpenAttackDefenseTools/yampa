@@ -143,7 +143,7 @@ class FilterEnginePlugin(PluginBase):
         self.udp_conns[conn_tuple][metadata.direction] = (self.udp_conns[conn_tuple][metadata.direction] + data)[
                                                          -self.BUFFER_SIZE:]
 
-        ret = await self._filter(conn_tuple, metadata, self.udp_conns[conn_tuple][metadata.direction[0]])
+        ret = await self._filter(conn_tuple, metadata, self.udp_conns[conn_tuple][metadata.direction])
         if ret is not None:
             return ret, data
         else:
