@@ -100,7 +100,7 @@ class Proxy:
         side = "net -> pro" if direction == ProxyDirection.INBOUND else "pro -> net"
         logger.debug(f"[UDP] %s %s", side, data)
 
-        to_server.send_datagram(data, dst_addr, src_addr)
+        to_server.send_datagram(data, src_addr, dst_addr)
 
     async def _handle_other(self, to_server: wireguard.Server, data):
         direction = ProxyDirection.INBOUND if to_server == self._proxy_server else ProxyDirection.OUTBOUND
