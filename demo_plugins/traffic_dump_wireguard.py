@@ -8,6 +8,7 @@ from scapy.layers.inet import IP, TCP
 
 from yamp import *
 
+DO_NOT_RELOAD=True
 
 def constructor():
     return TrafficDumpPlugin()
