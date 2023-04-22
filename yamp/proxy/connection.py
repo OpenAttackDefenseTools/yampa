@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 class ProxyConnection:
-    BUFFER_SIZE = 4096
+    BUFFER_SIZE = 8192
 
     def __init__(self, pm: "PluginManager", streams: dict[ConnectionDirection, ProxyStream],
                  src_addr: tuple[str, int], dst_addr: tuple[str, int], direction: ProxyDirection):

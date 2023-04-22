@@ -69,9 +69,11 @@ class PluginManager(PluginBase):
     def unload_plugin(self, name):
         # unload
         logger.info("... unloading %s", name)
-        success = self._plugins[name].unload()
-        del self._plugins[name]
-        return success
+        if name in self._plugins:
+            success = self._plugins[name].unload()
+            del self._plugins[name]
+            return success
+        return False
 
     def __getattribute__(self, name):
         if hasattr(PluginBase, name):

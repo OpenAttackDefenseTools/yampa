@@ -84,6 +84,7 @@ class FilterEnginePlugin(PluginBase):
         }
 
         self._eve.write(f"{json.dumps(log)}\n")
+        self._eve.flush()
 
     async def _filter(self, connection: ProxyConnection | tuple[str, int, str, int], metadata: Metadata,
                       context: bytes) -> FilterAction | None:

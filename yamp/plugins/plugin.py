@@ -41,6 +41,13 @@ class Plugin(PluginBase):
             return self.load()
 
         try:
+            if self._module.DO_NOT_RELOAD:
+                logger.info("Not reloading plugin %s because it declares no reload", self._name)
+                return False
+        except AttributeError:
+            pass
+
+        try:
             reload(self._module)
             self._impl = self._module.constructor()
             return True
