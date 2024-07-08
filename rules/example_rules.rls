@@ -1,4 +1,50 @@
 # Simple outgoing flag format
 #"FLAG\{[A-Za-z0-9]+\}"
 
-ALERT("contains flag") FLOWS("flag", "test") : OUT(1337) : "FLAG\{[A-Za-z0-9/.]+\}";
+#ALERT("contains flag") FLOWS("flag", "test") TAGS("flag-out") : OUT : "[A-Za-z0-9_]{31}=";
+#ALERT("too many AAAA") FLOWS("bof") TAGS("bof") : IN : "A{15}";
+#DROP("flag after too many AAAA") : OUT : "[A-Za-z0-9_]{31}=" SET("bof");
+#ALERT("User-Agent: checker") FLOWS("checker") TAGS("checker") : IN : "User-Agent: checker";
+#ALERT("User-Agent: python-requests/2.28.2") TAGS("py-requests") : IN : "User-Agent: python-requests/2.28.2";
+#
+DROP("sqli detected") TAGS("sqli-dropped") : IN(80) : "%27\+OR\+1%3D1%29\+AT\+DATABASE\+%28";
+DROP("sqli detected /api/museum/exhibits\?search='+[orOR]{2}") TAGS("sqli-dropped") : IN(80) : "/api/museum/exhibits\?search='\+[orOR]{2}";
+DROP("sqli detected /api/museum/exhibits\?search='\%20[orOR]{2}") TAGS("sqli-dropped") : IN(80) : "/api/museum/exhibits\?search='%20or";
+DROP("sqli detected /api/museum/exhibits\?search='\%20[orOR]{2}") TAGS("sqli-dropped") : IN(80) : "/api/museum/exhibits\?search='%20OR";
+DROP("sqli detected /api/museum/exhibits\?search='\ [orOR]{2}") TAGS("sqli-dropped") : IN(80) : "/api/museum/exhibits\?search=' [orOR]{2}";
+
+# pht3v3n added
+DROP("sqli v2 detected /api/museum/exhibits\?search=\%27+[orOR]{2}") TAGS("sqli-dropped") : IN(80) : "/api/museum/exhibits\?search=%27\+[orOR]{2}";
+DROP("sqli v2 detected /api/museum/exhibits\?search=\%27\%20[orOR]{2}") TAGS("sqli-dropped") : IN(80) : "/api/museum/exhibits\?search=%27%20[orOR]{2}";
+DROP("sqli v2 detected /api/museum/exhibits\?search=\%27 [orOR]{2}") TAGS("sqli-dropped") : IN(80) : "/api/museum/exhibits\?search=%27 [orOR]{2}";
+
+
+ALERT("login") TAGS("login") FLOWS("login") : IN(8080) : "POST /login";
+ALERT("login") FLOWS("loginx2") : IN(8080) : "POST /login" SET("login");
+DROP("flag after double login") : OUT : "[A-Za-z0-9_]{31}=" SET("loginx2");
+
+ALERT("register") TAGS("register") FLOWS("register") : IN(80) : "POST /api/register";
+DROP("flag after register") : OUT : "[A-Za-z0-9_]{31}=" SET("register");
+
+DROP("password bigger than 80 charaters") TAGS("longpw") : IN(8080) : "\"password\": \"[a-zA-Z0-9]{73,160}\"";
+
+
+ALERT("artist") TAGS("artist") FLOWS("artist") : IN(7777) : "POST /artist HTTP/1.1";
+DROP("downloadToken") : OUT : "downloadToken" SET("artist");
+DROP("multiple download tokens") TAGS("multidownload") : OUT(7777) : "\"downloadToken\".*\"downloadToken\"";
+
+
+DROP("firefox detected") TAGS("browser") : IN(80) : "User-Agent: Mozilla/5\.0 \(X11. Linux x86_64. rv:102\.0\) Gecko/20100101 Firefox/102\.0";
+
+DROP("%22%0Afriends%3A%0A++++") TAGS("friends") : IN(80) : "%22%0Afriends%3A%0A\+\+\+\+";
+DROP("friends:\n    ") TAGS("friends") : IN(80) : "friends:\n    ";
+
+DROP("long requests blocked") TAGS("longblock") : IN(7654) : "(.|[\n\r]){5000,}$";
+
+#DROP("niggri") TAGS("niggri") : IN(80) : "niggri";
+#DROP("file:///vault/books/") TAGS("ssrf-vault") : IN(80) : "|file:///vault/books/";
+#DROP("ssrf outbound") TAGS("ssrf-out") : OUT(9998) : "GET /push\?flag=";
+
+
+ALERT("get storage") TAGS("storage") FLOWS("storage") : IN(8080) : "GET /api/storage";
+DROP("get storage again") : IN(8080) : "GET /api/storage" SET("storage");
