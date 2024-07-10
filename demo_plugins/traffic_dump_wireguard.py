@@ -6,7 +6,7 @@ from typing import Callable
 import mitmproxy_wireguard as wireguard
 from scapy.layers.inet import IP, TCP
 
-from yamp import *
+from yampa import *
 
 DO_NOT_RELOAD=True
 

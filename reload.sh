@@ -1,3 +1,3 @@
 #!/bin/bash
 
-docker compose kill -s SIGUSR1 yamp
+docker compose kill -s SIGUSR1 yampa

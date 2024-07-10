@@ -1,6 +1,6 @@
 import re
 
-from yamp import *
+from yampa import *
 
 
 def constructor():

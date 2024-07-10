@@ -5,7 +5,7 @@ from typing import Set, Dict
 import logging
 import asyncio
 
-from yamp import *
+from yampa import *
 
 from filter_engine import *
 

@@ -1,26 +1,26 @@
-# YAMP -- User Manual
+# YAMPA -- User Manual
 
 ## Overview
 
-YAMP is Yet Another Mitm Proxy for use in A/D CTFs.
+YAMPA is Yet Another Mitm Proxy for use in A/D CTFs.
 It is intended to sit in between the gamenet and vulnbox and can be customized via plugins to perform different functionality on the traffic.
 
-Fun fact: Yamp is also the short name for [various plants native to western North America](https://en.wikipedia.org/wiki/Perideridia).
+Fun fact: Yampa is also the short name for [various plants native to western North America](https://en.wikipedia.org/wiki/Perideridia).
 
 ## Setup
 
-Since YAMP runs in docker, you hardly have to take care of prerequisites -- except for docker, of course.
+Since YAMPA runs in docker, you hardly have to take care of prerequisites -- except for docker, of course.
 
 Note that a fairly recent version of both docker and the docker compose plugin is required.
 
-To set up YAMP, do the following:
+To set up YAMPA, do the following:
 
 1. Clone the repository.
 (In the rest of the documentantion, `./` refers to the repository.)
 2. Generate a sample environment using `./generate-env.sh`
 3. Edit `.env` and adjust the config as you need
 
-At this point, YAMP should be ready to run.
+At this point, YAMPA should be ready to run.
 To start it, use the following command:
 
 ```bash
@@ -29,7 +29,7 @@ docker compose up -d
 
 ## Plugins
 
-When YAMP is started up freshly without any plugins*, the proxy will behave transparently.
+When YAMPA is started up freshly without any plugins*, the proxy will behave transparently.
 That is, it will forward traffic in both directions without modifying, filtering or logging it.
 To do so, you will want to add plugins.
 
@@ -60,7 +60,7 @@ However, without adding meaningful rules into `./rules/`, it will not filter any
 
 To add your plugins, add them to your specified plugin directory (e.g. `./plugins`).
 For the changes to take effect during runtime, call `./reload.sh`.
-YAMP will then unload all plugins, reload the code and initialize them again.
+YAMPA will then unload all plugins, reload the code and initialize them again.
 
 If an old version of a plugin is running and an error arises while loading the newer version, the old version will keep running.
 That is, plugins are only replaced if at least the load process is successful.
@@ -77,7 +77,7 @@ That is, the constructor returns an instance of a *direct* subclass of `PluginBa
 You can use the constructor to do some initialization (like loading filter rules from a file).
 
 The class `PluginBase` defines the available hooks and their signatures.
-To find out what hooks are available, what parameters they take and what output is expected, find the extensive documentation in `./yamp/plugins/base.py`, where all details are layed out.
+To find out what hooks are available, what parameters they take and what output is expected, find the extensive documentation in `./yampa/plugins/base.py`, where all details are layed out.
 
 You can implement a hook by simply overriding the base function.
 Since PluginBase only specifies a default for when no plugin overrides a given hook, there is no need to call super().
@@ -108,7 +108,7 @@ Note that wrappers will not be removed when a plugin is unloaded or reloaded, to
 This might be problematic if you wrap a single connection twice.
 
 As a demonstration, see `./demo_plugins/ssl_termination_plugin.py`.
-For a more technical documentation, see `./yamp/proxy/connection.py`.
+For a more technical documentation, see `./yampa/proxy/connection.py`.
 
 
 ### Demo-Plugins

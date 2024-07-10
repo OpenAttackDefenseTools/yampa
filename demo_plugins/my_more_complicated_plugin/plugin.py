@@ -1,6 +1,6 @@
 import aiohttp
 
-from yamp import *
+from yampa import *
 
 
 class MyPlugin(PluginBase):

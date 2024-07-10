@@ -8,4 +8,4 @@ fi
 
 RULES="$(cat $RULES_DIR/*.rls)"
 
-docker compose run -iT --rm yamp filter_engine_lint <<<"$RULES"
+docker compose run -iT --rm yampa filter_engine_lint <<<"$RULES"

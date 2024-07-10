@@ -4,7 +4,7 @@ import tempfile
 from abc import ABC, abstractmethod
 from functools import wraps
 
-from yamp import *
+from yampa import *
 
 
 def constructor():

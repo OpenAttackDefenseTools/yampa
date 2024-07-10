@@ -5,11 +5,11 @@ version: '3.9'
 #
 
 services:
-  yamp:
+  yampa:
     build: ./
     networks:
-      - yamp
-    hostname: yamp
+      - yampa
+    hostname: yampa
     env_file:
       - ${ENV_FILE-.env}
     ports:
@@ -26,9 +26,9 @@ services:
     profiles:
       - testing
     depends_on:
-      - yamp
+      - yampa
     networks:
-      - yamp
+      - yampa
     hostname: testserver
     env_file:
       - .env-test
@@ -40,10 +40,10 @@ services:
     profiles:
       - testing
     depends_on:
-      - yamp
+      - yampa
       - test_server
     networks:
-      - yamp
+      - yampa
     hostname: testclient
     env_file:
       - .env-test
@@ -51,4 +51,4 @@ services:
       - NET_ADMIN
 
 networks:
-  yamp:
+  yampa:
